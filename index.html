@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Component Origin Risk Finder</title>
+<style>
+/* Layout: header with notice and step nav; each test is a two-column grid (work area + sticky Questions panel). */
+:root {
+  --bg: #f2f4f6;
+  --surface: #ffffff;
+  --surface-2: #eaeef2;
+  --ink: #15202b;
+  --ink-2: #4b5967;
+  --line: #d4dbe2;
+  --line-strong: #a9b5c1;
+  --accent: #1d5d8a;
+  --accent-hover: #164a6f;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2edf6;
+  --focus: #1d5d8a;
+  --crit-fg: #8b1d1d;
+  --crit-bg: #fbe8e7;
+  --crit-line: #e0a8a4;
+  --warn-fg: #714700;
+  --warn-bg: #fcf0d6;
+  --warn-line: #e3bf75;
+  --caution-fg: #8a3a0b;
+  --caution-bg: #fde7d8;
+  --caution-line: #e8ae89;
+  --ok-fg: #1c5a2d;
+  --ok-bg: #e2f2e6;
+  --ok-line: #9bc9a7;
+  --notice-fg: #574100;
+  --notice-bg: #fff5d9;
+  --notice-line: #dfc268;
+  --sheet-head: #e6ebef;
+  --sheet-grid: #d3dae0;
+  --row-hover: #f1f6fa;
+  --row-selected: #d9e8f4;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10151a;
+    --surface: #182029;
+    --surface-2: #202a34;
+    --ink: #e5eaef;
+    --ink-2: #a5b1bd;
+    --line: #2e3945;
+    --line-strong: #4a5867;
+    --accent: #72b2df;
+    --accent-hover: #93c6ea;
+    --accent-ink: #0b1620;
+    --accent-soft: #1b3246;
+    --focus: #8fc3ea;
+    --crit-fg: #ffb3ac;
+    --crit-bg: #3a1b1b;
+    --crit-line: #7a3631;
+    --warn-fg: #f4cf80;
+    --warn-bg: #342a13;
+    --warn-line: #6d5523;
+    --caution-fg: #f6b78c;
+    --caution-bg: #392417;
+    --caution-line: #7a4a2b;
+    --ok-fg: #9edbad;
+    --ok-bg: #16301f;
+    --ok-line: #2f6a41;
+    --notice-fg: #efd88a;
+    --notice-bg: #2d2711;
+    --notice-line: #6a5923;
+    --sheet-head: #202a34;
+    --sheet-grid: #2e3945;
+    --row-hover: #1e2935;
+    --row-selected: #1b3246;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10151a;
+  --surface: #182029;
+  --surface-2: #202a34;
+  --ink: #e5eaef;
+  --ink-2: #a5b1bd;
+  --line: #2e3945;
+  --line-strong: #4a5867;
+  --accent: #72b2df;
+  --accent-hover: #93c6ea;
+  --accent-ink: #0b1620;
+  --accent-soft: #1b3246;
+  --focus: #8fc3ea;
+  --crit-fg: #ffb3ac;
+  --crit-bg: #3a1b1b;
+  --crit-line: #7a3631;
+  --warn-fg: #f4cf80;
+  --warn-bg: #342a13;
+  --warn-line: #6d5523;
+  --caution-fg: #f6b78c;
+  --caution-bg: #392417;
+  --caution-line: #7a4a2b;
+  --ok-fg: #9edbad;
+  --ok-bg: #16301f;
+  --ok-line: #2f6a41;
+  --notice-fg: #efd88a;
+  --notice-bg: #2d2711;
+  --notice-line: #6a5923;
+  --sheet-head: #202a34;
+  --sheet-grid: #2e3945;
+  --row-hover: #1e2935;
+  --row-selected: #1b3246;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-inline: 24px;
+  padding-block: 20px 56px;
+}
+@media (max-width: 600px) { .page { padding-inline: 16px; } }
+
+h1, h2, h3 { text-wrap: balance; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; line-height: 1.3; margin: 0; }
+h3 { font-size: 1.05rem; line-height: 1.3; margin: 0; }
+[tabindex="-1"]:focus { outline: none; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.mono { font-family: var(--font-mono); font-size: 0.9em; white-space: nowrap; }
+.label-caps {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* Header */
+.app-header {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.title-row { display: grid; gap: 2px; }
+.eyebrow { margin: 0; color: var(--ink-2); }
+.notice {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--notice-line);
+  background: var(--notice-bg);
+  color: var(--notice-fg);
+  border-radius: 6px;
+  font-size: 0.92rem;
+}
+
+/* Step navigation */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 16px 7px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.step:hover:not(:disabled) { border-color: var(--accent); }
+.step-num {
+  display: inline-grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--surface-2);
+  font-weight: 700; font-size: 0.85rem; font-variant-numeric: tabular-nums;
+}
+.step-text { display: grid; line-height: 1.2; }
+.step-label { font-weight: 600; }
+.step-state { font-size: 0.76rem; color: var(--ink-2); }
+.step[aria-current="step"] { border-color: var(--accent); background: var(--accent-soft); }
+.step[aria-current="step"] .step-num { background: var(--accent); color: var(--accent-ink); }
+.step:disabled { cursor: not-allowed; color: var(--ink-2); background: var(--surface-2); border-style: dashed; }
+
+/* Buttons and form controls */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; padding: 8px 16px;
+  border-radius: 6px; border: 1px solid var(--line-strong);
+  background: var(--surface); color: var(--ink);
+  font: inherit; font-weight: 600; cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-ink); }
+.btn-danger { color: var(--crit-fg); border-color: var(--crit-line); }
+.btn-danger:hover:not(:disabled) { color: var(--crit-fg); border-color: var(--crit-fg); background: var(--crit-bg); }
+.btn-small { min-height: 34px; padding: 5px 12px; font-size: 0.875rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+select, input[type="search"], textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+select:disabled { background: var(--surface-2); color: var(--ink-2); cursor: not-allowed; }
+select[aria-invalid="true"] { border-color: var(--crit-fg); box-shadow: 0 0 0 1px var(--crit-fg); }
+textarea { min-height: 128px; resize: vertical; line-height: 1.55; }
+
+.hint { margin: 0; color: var(--ink-2); font-size: 0.86rem; }
+.hint:empty { display: none; }
+.msg { margin: 0; padding: 9px 12px; border-radius: 6px; border: 1px solid; font-size: 0.92rem; }
+.msg:empty { display: none; }
+.msg-ok { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-line); }
+.msg-warn { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-line); }
+.msg-error { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-line); }
+
+/* Section heads */
+.view-head { display: grid; gap: 4px; margin-bottom: 18px; }
+.view-head p { margin: 0; color: var(--ink-2); max-width: 78ch; }
+
+/* Instructions */
+.instructions { display: grid; gap: 20px; max-width: 80ch; }
+.lead {
+  margin: 0;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 1.05rem;
+}
+.block { display: grid; gap: 8px; }
+.block ol, .block ul { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
+.start-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+
+/* Test layout */
+.test-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+.test-main { grid-column: 1; grid-row: 1; min-width: 0; display: grid; gap: 16px; }
+.task-panel {
+  grid-column: 2; grid-row: 1;
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  display: grid; gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+@media (max-width: 960px) {
+  .test-layout { grid-template-columns: minmax(0, 1fr); }
+  .test-main, .task-panel { grid-column: 1; grid-row: auto; }
+  .task-panel { position: static; max-height: none; }
+}
+.timer-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--line);
+}
+.timer { display: grid; justify-items: end; }
+.timer-label { color: var(--ink-2); }
+.timer-value {
+  font-family: var(--font-mono);
+  font-size: 1.65rem; font-weight: 600; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.task-form { display: grid; gap: 14px; }
+.question { display: grid; gap: 6px; }
+.question label { display: grid; gap: 2px; font-size: 0.93rem; }
+.q-num { color: var(--accent); }
+.panel-divider { border: 0; border-top: 1px solid var(--line); margin: 0; width: 100%; }
+
+/* Fragmented spreadsheet tabs */
+.sheet-tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.sheet-tab {
+  position: relative;
+  display: grid; gap: 1px; justify-items: start;
+  margin-bottom: -1px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px 6px 0 0;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font: inherit; font-size: 0.92rem; text-align: left;
+  cursor: pointer;
+}
+.sheet-tab:hover { color: var(--ink); }
+.sheet-tab[aria-selected="true"] {
+  z-index: 1;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--surface);
+}
+.sheet-panel {
+  display: grid; gap: 10px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 0 6px 6px 6px;
+  min-width: 0;
+}
+.file-bar { display: flex; flex-wrap: wrap; gap: 2px 18px; margin: 0; font-size: 0.82rem; color: var(--ink-2); }
+.scroll-x { overflow-x: auto; }
+.sheet { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.875rem; }
+.sheet th, .sheet td { border: 1px solid var(--sheet-grid); padding: 6px 10px; text-align: left; vertical-align: top; }
+.sheet thead th { background: var(--sheet-head); font-weight: 600; white-space: nowrap; }
+.sheet .gutter {
+  width: 40px; text-align: center; font-weight: 400;
+  background: var(--sheet-head); color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.sheet td { font-variant-numeric: tabular-nums; }
+
+/* Dashboard */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+.card {
+  display: grid; gap: 4px; align-content: start;
+  grid-row: span 3; grid-template-rows: subgrid;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.card-label { margin: 0; color: var(--ink-2); }
+.card-value { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.card-value .of { font-size: 0.9rem; font-weight: 500; color: var(--ink-2); }
+.card-note { margin: 0; font-size: 0.85rem; color: var(--ink-2); }
+.tone-text-crit { color: var(--crit-fg); }
+.tone-text-warn { color: var(--warn-fg); }
+
+.controls {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.field { display: grid; gap: 4px; flex: 1 1 160px; min-width: 0; }
+.field-search { flex: 2.2 1 260px; }
+.field label { font-size: 0.85rem; font-weight: 600; }
+.controls .btn { flex: 0 0 auto; }
+.count { margin: 0; font-size: 0.88rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.data { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 0.875rem; }
+.data caption { text-align: left; padding: 12px 12px 4px; font-weight: 600; }
+.data th, .data td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.data thead th {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-2); background: var(--surface-2); white-space: nowrap;
+}
+.data tbody tr:last-child > * { border-bottom: none; }
+.data tbody th { font-weight: 600; }
+.data tr.clickable { cursor: pointer; }
+.data tr.clickable:hover { background: var(--row-hover); }
+.data tr.is-selected, .data tr.is-selected:hover { background: var(--row-selected); }
+.data tr.clickable:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.data td.empty { text-align: center; color: var(--ink-2); padding: 28px 12px; }
+.data-narrow { min-width: 520px; }
+.data-review { min-width: 760px; }
+
+.badge {
+  display: inline-block;
+  padding: 1px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.78rem; font-weight: 700; line-height: 1.6;
+  white-space: nowrap;
+}
+.badge-doc { border-radius: 4px; }
+.tone-crit { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-line); }
+.tone-warn { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-line); }
+.tone-caution { background: var(--caution-bg); color: var(--caution-fg); border-color: var(--caution-line); }
+.tone-ok { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-line); }
+
+/* Detail panel */
+.detail {
+  display: grid; gap: 16px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+.detail-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 16px; }
+.detail-head h3 { font-size: 1.15rem; }
+.detail-head .mono { margin-right: 2px; }
+.chain-block { display: grid; gap: 6px; }
+.chain { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.chain li { display: flex; align-items: stretch; gap: 8px; flex: 1 1 170px; min-width: 0; }
+.chain-node {
+  display: grid; gap: 2px; align-content: start; flex: 1 1 auto; min-width: 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.chain-role { color: var(--ink-2); }
+.chain-value { font-weight: 600; overflow-wrap: anywhere; }
+.chain-arrow { align-self: center; color: var(--ink-2); font-size: 1.15rem; }
+.detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; margin: 0; }
+.detail-grid > div { display: grid; gap: 2px; min-width: 0; }
+.detail-grid dt { color: var(--ink-2); }
+.detail-grid dd { margin: 0; overflow-wrap: anywhere; }
+.detail-grid .wide { grid-column: 1 / -1; }
+@media (max-width: 600px) { .detail-grid { grid-template-columns: minmax(0, 1fr); } }
+.response { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.response label { font-weight: 600; font-size: 0.9rem; }
+.button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.start-card {
+  display: grid; gap: 12px; max-width: 72ch;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.start-card p { margin: 0; }
+
+/* Results */
+.results { display: grid; gap: 20px; max-width: 980px; }
+.summary {
+  display: grid; gap: 8px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.summary p { margin: 0; }
+.statement { font-size: 1.1rem; font-weight: 700; }
+.data td.num { font-variant-numeric: tabular-nums; }
+.formula { margin: 0; font-size: 0.85rem; color: var(--ink-2); }
+.caution-note {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="app-header">
+    <div class="title-row">
+      <p class="eyebrow label-caps">Class MVP · Supplier-origin retrieval experiment</p>
+      <h1>Semiconductor Component Origin and Risk Finder</h1>
+    </div>
+    <p class="notice" role="note"><strong>Notice:</strong> Fictional data for class testing only. Risk labels are illustrative and are not legal or compliance advice.</p>
+    <nav aria-label="Experiment steps">
+      <ol class="steps">
+        <li><button type="button" class="step" id="nav-instructions" data-view="instructions"><span class="step-num">1</span><span class="step-text"><span class="step-label">Instructions</span><span class="step-state" id="navstate-instructions"></span></span></button></li>
+        <li><button type="button" class="step" id="nav-current" data-view="current"><span class="step-num">2</span><span class="step-text"><span class="step-label">Current Process Test</span><span class="step-state" id="navstate-current"></span></span></button></li>
+        <li><button type="button" class="step" id="nav-central" data-view="central"><span class="step-num">3</span><span class="step-text"><span class="step-label">Centralized Tool Test</span><span class="step-state" id="navstate-central"></span></span></button></li>
+        <li><button type="button" class="step" id="nav-results" data-view="results"><span class="step-num">4</span><span class="step-text"><span class="step-label">Results</span><span class="step-state" id="navstate-results"></span></span></button></li>
+      </ol>
+    </nav>
+  </header>
+
+  <main>
+    <!-- SECTION 1: INSTRUCTIONS -->
+    <section id="view-instructions" aria-labelledby="h-instructions">
+      <div class="view-head">
+        <h2 id="h-instructions" tabindex="-1">Instructions</h2>
+      </div>
+      <div class="instructions">
+        <p class="msg msg-ok" id="reset-status" role="status"></p>
+        <p class="lead">You will complete two short sourcing exercises using the same fictional semiconductor supply-chain records. First, you will use fragmented records that simulate separate spreadsheets and documents. Second, you will use a centralized search and risk dashboard. Your completion time and answer accuracy will be compared.</p>
+
+        <div class="block">
+          <h3>How it works</h3>
+          <ol>
+            <li>Click <strong>Begin Current Process Test</strong>. A timer starts right away.</li>
+            <li>Answer three questions by switching between three separate record tabs and matching Component IDs. Pick one Component ID per question, then click <strong>Submit Current Process Answers</strong>.</li>
+            <li>Click <strong>Begin Centralized Tool Test</strong>. A second timer starts. Answer three different questions using the dashboard's search, filters, and table, then click <strong>Submit Centralized Tool Answers</strong>.</li>
+            <li>Review both completion times and scores in <strong>Results</strong>. Correct answers are shown only there.</li>
+          </ol>
+        </div>
+
+        <div class="block">
+          <h3>Before you start</h3>
+          <ul>
+            <li>This is a small directional class experiment. Results may be affected by the tester becoming familiar with the data, because the Centralized Tool Test always comes second.</li>
+            <li>Each question has exactly one correct Component ID.</li>
+            <li>A timer keeps running if you switch to another section, so stay on the test until you submit.</li>
+            <li>Results are kept only in this browser tab. Refreshing or closing the page clears them.</li>
+          </ul>
+        </div>
+
+        <div class="start-row">
+          <button type="button" class="btn btn-primary" id="begin-current">Begin Current Process Test</button>
+          <p class="hint" id="begin-current-note"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: CURRENT PROCESS TEST -->
+    <section id="view-current" aria-labelledby="h-current" hidden>
+      <div class="view-head">
+        <h2 id="h-current" tabindex="-1">Current Process Test</h2>
+        <p>These three tabs simulate separate files kept by different teams. There is no search and no filtering. Match Component IDs across the tabs to answer the questions in the Questions panel.</p>
+      </div>
+      <div class="test-layout">
+        <aside class="task-panel" aria-labelledby="h-current-tasks">
+          <div class="timer-row">
+            <h3 id="h-current-tasks">Questions</h3>
+            <div class="timer">
+              <span class="timer-label label-caps" id="timer-current-label">Not started</span>
+              <span class="timer-value" id="timer-current" role="timer" aria-live="off">00:00</span>
+            </div>
+          </div>
+          <form class="task-form" id="form-current" novalidate>
+            <div id="current-fields" class="task-form"></div>
+            <p class="msg msg-error" id="current-error" role="alert" hidden></p>
+            <button type="submit" class="btn btn-primary" id="submit-current">Submit Current Process Answers</button>
+          </form>
+          <p class="msg msg-ok" id="current-confirm" role="status"></p>
+          <hr class="panel-divider">
+          <button type="button" class="btn" id="begin-central" disabled>Begin Centralized Tool Test</button>
+          <p class="hint" id="begin-central-hint"></p>
+        </aside>
+
+        <div class="test-main">
+          <div class="sheet-tabs" role="tablist" aria-label="Fragmented record files">
+            <button type="button" role="tab" class="sheet-tab" id="tab-a" aria-controls="panel-a" aria-selected="true">A. Components and Direct Suppliers</button>
+            <button type="button" role="tab" class="sheet-tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1">B. Origin Documentation</button>
+            <button type="button" role="tab" class="sheet-tab" id="tab-c" aria-controls="panel-c" aria-selected="false" tabindex="-1">C. Risk Notes</button>
+          </div>
+
+          <div class="sheet-panel" role="tabpanel" id="panel-a" aria-labelledby="tab-a">
+            <p class="file-bar"><span>File: <span class="mono">components_master.xlsx</span></span><span>Maintained by: Procurement</span><span>8 rows</span></p>
+            <div class="scroll-x">
+              <table class="sheet">
+                <caption class="sr-only">Components and Direct Suppliers</caption>
+                <thead><tr><th scope="col" class="gutter"><span class="sr-only">Row</span></th><th scope="col">Component ID</th><th scope="col">Component Name</th><th scope="col">Subsystem</th><th scope="col">Direct Supplier</th></tr></thead>
+                <tbody id="tbody-a"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="sheet-panel" role="tabpanel" id="panel-b" aria-labelledby="tab-b" hidden>
+            <p class="file-bar"><span>File: <span class="mono">origin_documentation_tracker.xlsx</span></span><span>Maintained by: Quality and Compliance</span><span>8 rows</span></p>
+            <div class="scroll-x">
+              <table class="sheet">
+                <caption class="sr-only">Origin Documentation</caption>
+                <thead><tr><th scope="col" class="gutter"><span class="sr-only">Row</span></th><th scope="col">Component ID</th><th scope="col">Critical Upstream Supplier</th><th scope="col">Country of Origin</th><th scope="col">Documentation Status</th><th scope="col">Last Verified</th></tr></thead>
+                <tbody id="tbody-b"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="sheet-panel" role="tabpanel" id="panel-c" aria-labelledby="tab-c" hidden>
+            <p class="file-bar"><span>File: <span class="mono">supplier_risk_notes.docx</span> (table)</span><span>Maintained by: Supply Chain Risk</span><span>8 entries</span></p>
+            <div class="scroll-x">
+              <table class="sheet">
+                <caption class="sr-only">Risk Notes</caption>
+                <thead><tr><th scope="col" class="gutter"><span class="sr-only">Row</span></th><th scope="col">Component ID</th><th scope="col">Risk Level</th><th scope="col">Risk Explanation</th></tr></thead>
+                <tbody id="tbody-c"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: CENTRALIZED TOOL TEST -->
+    <section id="view-central" aria-labelledby="h-central" hidden>
+      <div class="view-head">
+        <h2 id="h-central" tabindex="-1">Centralized Tool Test</h2>
+        <p>All supplier-origin records in one dashboard. Use the search, filters, and table to answer the questions in the Questions panel. Select any row to see its supplier chain and draft a customer response.</p>
+      </div>
+
+      <div class="start-card" id="central-start">
+        <p>The dashboard opens and the Centralized Tool timer starts when you click the button below. The three questions stay visible beside the dashboard while you work.</p>
+        <div><button type="button" class="btn btn-primary" id="begin-central-start" disabled>Begin Centralized Tool Test</button></div>
+      </div>
+
+      <div class="test-layout" id="central-test" hidden>
+        <aside class="task-panel" aria-labelledby="h-central-tasks">
+          <div class="timer-row">
+            <h3 id="h-central-tasks">Questions</h3>
+            <div class="timer">
+              <span class="timer-label label-caps" id="timer-central-label">Not started</span>
+              <span class="timer-value" id="timer-central" role="timer" aria-live="off">00:00</span>
+            </div>
+          </div>
+          <form class="task-form" id="form-central" novalidate>
+            <div id="central-fields" class="task-form"></div>
+            <p class="msg msg-error" id="central-error" role="alert" hidden></p>
+            <button type="submit" class="btn btn-primary" id="submit-central">Submit Centralized Tool Answers</button>
+          </form>
+        </aside>
+
+        <div class="test-main">
+          <div class="cards">
+            <div class="card">
+              <p class="card-label label-caps">High-Risk Components</p>
+              <p class="card-value tone-text-crit"><span id="card-high">0</span> <span class="of" id="card-high-of">of 0</span></p>
+              <p class="card-note">Components with a risk level of High.</p>
+            </div>
+            <div class="card">
+              <p class="card-label label-caps">China-Linked Critical Dependencies</p>
+              <p class="card-value tone-text-crit"><span id="card-china">0</span> <span class="of" id="card-china-of">of 0</span></p>
+              <p class="card-note">Critical upstream supplier located in China.</p>
+            </div>
+            <div class="card">
+              <p class="card-label label-caps">Components Requiring Documentation Attention</p>
+              <p class="card-value tone-text-warn"><span id="card-docs">0</span> <span class="of" id="card-docs-of">of 0</span></p>
+              <p class="card-note">Documentation is Incomplete, Missing, or Expiring.</p>
+            </div>
+          </div>
+
+          <div class="controls" role="search" aria-label="Search and filter components">
+            <div class="field field-search">
+              <label for="search">Search</label>
+              <input type="search" id="search" placeholder="ID, component, subsystem, supplier, or country" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="filter-country">Country</label>
+              <select id="filter-country"><option value="">All countries</option></select>
+            </div>
+            <div class="field">
+              <label for="filter-risk">Risk level</label>
+              <select id="filter-risk"><option value="">All risk levels</option></select>
+            </div>
+            <div class="field">
+              <label for="filter-doc">Documentation status</label>
+              <select id="filter-doc"><option value="">All statuses</option></select>
+            </div>
+            <button type="button" class="btn" id="clear-filters">Clear Filters</button>
+          </div>
+
+          <p class="count" id="result-count" role="status" aria-live="polite"></p>
+
+          <div class="table-wrap">
+            <table class="data" id="central-table">
+              <caption class="sr-only">All components. Select a row to open its details.</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Component ID</th>
+                  <th scope="col">Component</th>
+                  <th scope="col">Subsystem</th>
+                  <th scope="col">Direct Supplier</th>
+                  <th scope="col">Critical Upstream Supplier</th>
+                  <th scope="col">Country</th>
+                  <th scope="col">Risk</th>
+                  <th scope="col">Documentation</th>
+                </tr>
+              </thead>
+              <tbody id="central-tbody"></tbody>
+            </table>
+          </div>
+          <p class="hint">Click a row, or focus it and press Enter, to open its supplier details.</p>
+
+          <section class="detail" id="detail" aria-labelledby="detail-title" hidden>
+            <div class="detail-head">
+              <h3 id="detail-title" tabindex="-1"><span class="mono" id="d-id"></span> <span id="d-name"></span></h3>
+              <button type="button" class="btn btn-small" id="detail-close">Close Details</button>
+            </div>
+
+            <div class="chain-block">
+              <p class="label-caps chain-role" id="chain-heading" style="margin:0">Supplier chain</p>
+              <ol class="chain" aria-labelledby="chain-heading">
+                <li><div class="chain-node"><span class="chain-role label-caps">Component</span><span class="chain-value" id="chain-component"></span></div><span class="chain-arrow" aria-hidden="true">→</span></li>
+                <li><div class="chain-node"><span class="chain-role label-caps">Direct Supplier</span><span class="chain-value" id="chain-direct"></span></div><span class="chain-arrow" aria-hidden="true">→</span></li>
+                <li><div class="chain-node"><span class="chain-role label-caps">Critical Upstream Supplier</span><span class="chain-value" id="chain-upstream"></span></div><span class="chain-arrow" aria-hidden="true">→</span></li>
+                <li><div class="chain-node"><span class="chain-role label-caps">Country</span><span class="chain-value" id="chain-country"></span></div></li>
+              </ol>
+            </div>
+
+            <dl class="detail-grid">
+              <div><dt class="label-caps">Component ID and name</dt><dd id="d-idname"></dd></div>
+              <div><dt class="label-caps">Subsystem</dt><dd id="d-subsystem"></dd></div>
+              <div><dt class="label-caps">Direct supplier</dt><dd id="d-direct"></dd></div>
+              <div><dt class="label-caps">Critical upstream supplier</dt><dd id="d-upstream"></dd></div>
+              <div><dt class="label-caps">Country of origin</dt><dd id="d-country"></dd></div>
+              <div><dt class="label-caps">Risk level</dt><dd id="d-risk"></dd></div>
+              <div class="wide"><dt class="label-caps">Risk explanation</dt><dd id="d-explanation"></dd></div>
+              <div><dt class="label-caps">Documentation status</dt><dd id="d-doc"></dd></div>
+              <div><dt class="label-caps">Last verified</dt><dd id="d-verified"></dd></div>
+            </dl>
+
+            <div class="response">
+              <div class="button-row">
+                <button type="button" class="btn btn-primary" id="generate-response">Generate Customer Response</button>
+                <button type="button" class="btn" id="copy-response" disabled>Copy Response</button>
+              </div>
+              <label for="response-text">Customer response draft (you can edit it before copying)</label>
+              <textarea id="response-text" rows="5" placeholder="Click Generate Customer Response to draft a reply for this component."></textarea>
+              <p class="msg" id="copy-status" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: RESULTS -->
+    <section id="view-results" aria-labelledby="h-results" hidden>
+      <div class="view-head">
+        <h2 id="h-results" tabindex="-1">Results</h2>
+        <p>Comparison of the two methods for this one test session.</p>
+      </div>
+      <div class="results">
+        <div class="summary">
+          <p class="statement" id="speed-statement"></p>
+          <p id="accuracy-statement"></p>
+          <p class="hint" id="accuracy-caution"></p>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data data-narrow">
+            <caption>Comparison of methods</caption>
+            <thead><tr><th scope="col">Measure</th><th scope="col">Result</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Current Process completion time</th><td class="num" id="r-cur-time"></td></tr>
+              <tr><th scope="row">Current Process correct answers</th><td class="num" id="r-cur-score"></td></tr>
+              <tr><th scope="row">Centralized Tool completion time</th><td class="num" id="r-cen-time"></td></tr>
+              <tr><th scope="row">Centralized Tool correct answers</th><td class="num" id="r-cen-score"></td></tr>
+              <tr><th scope="row">Difference in completion time</th><td class="num" id="r-diff"></td></tr>
+              <tr><th scope="row">Percentage change in completion time</th><td class="num" id="r-pct"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="formula">Percentage change = (Current Process time − Centralized Tool time) ÷ Current Process time × 100. A positive value means the Centralized Tool took less time. Times are rounded to the nearest 0.1 second before calculating.</p>
+
+        <div class="block">
+          <h3>Answer review</h3>
+          <div class="table-wrap">
+            <table class="data data-review">
+              <caption class="sr-only">Your answers compared with the correct answers</caption>
+              <thead><tr><th scope="col">Test</th><th scope="col">Question</th><th scope="col">Your answer</th><th scope="col">Correct answer</th><th scope="col">Result</th></tr></thead>
+              <tbody id="review-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="caution-note">This is a small directional class test, not evidence that the result would generalize to all supply-chain professionals.</p>
+
+        <div><button type="button" class="btn btn-danger" id="reset-experiment">Reset Experiment</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   FICTIONAL DATA FOR CLASS TESTING ONLY
+   All companies, components, and records below are fictional.
+   Risk labels are illustrative and are not legal or compliance advice.
+   ===================================================================== */
+const SUPPLY_CHAIN_RECORDS = [
+  {
+    id: "VP-101",
+    name: "Turbomolecular Vacuum Pump",
+    subsystem: "Vacuum System",
+    directSupplier: "NovaVac Systems",
+    upstreamSupplier: "SinoBearing Precision",
+    country: "China",
+    riskLevel: "High",
+    docStatus: "Incomplete",
+    lastVerified: "2026-01-15",
+    riskExplanation: "Single-sourced bearing assembly with incomplete upstream-origin documentation."
+  },
+  {
+    id: "RF-204",
+    name: "RF Match Network",
+    subsystem: "RF Power Delivery",
+    directSupplier: "ArcWave Technologies",
+    upstreamSupplier: "Kanto Ceramic Works",
+    country: "Japan",
+    riskLevel: "Low",
+    docStatus: "Verified",
+    lastVerified: "2026-08-21",
+    riskExplanation: "Origin records are verified and a second approved source is available."
+  },
+  {
+    id: "MFC-309",
+    name: "Mass Flow Controller",
+    subsystem: "Gas Delivery",
+    directSupplier: "FlowAxis Controls",
+    upstreamSupplier: "Malacca Sensor Devices",
+    country: "Malaysia",
+    riskLevel: "Medium",
+    docStatus: "Expiring",
+    lastVerified: "2025-12-04",
+    riskExplanation: "The sensor die is sole-sourced and its documentation will require renewal."
+  },
+  {
+    id: "ESC-412",
+    name: "Electrostatic Chuck",
+    subsystem: "Wafer Handling",
+    directSupplier: "ThermoGrip Components",
+    upstreamSupplier: "Hanseong Ceramic Materials",
+    country: "South Korea",
+    riskLevel: "Medium",
+    docStatus: "Verified",
+    lastVerified: "2026-06-10",
+    riskExplanation: "Origin is documented, but qualifying a replacement supplier would take several months."
+  },
+  {
+    id: "VAL-515",
+    name: "Ultra-High Vacuum Valve",
+    subsystem: "Vacuum System",
+    directSupplier: "SealCore Industries",
+    upstreamSupplier: "RheinSeal Metals",
+    country: "Germany",
+    riskLevel: "Low",
+    docStatus: "Verified",
+    lastVerified: "2026-07-29",
+    riskExplanation: "Origin records are verified and two qualified sources are available."
+  },
+  {
+    id: "MOT-618",
+    name: "Precision Servo Motor",
+    subsystem: "Motion Control",
+    directSupplier: "AxisMotion USA",
+    upstreamSupplier: "Dragon Magnetics",
+    country: "China",
+    riskLevel: "High",
+    docStatus: "Missing",
+    lastVerified: "2024-11-18",
+    riskExplanation: "The rare-earth magnet source is single-sourced and current origin documentation is missing."
+  },
+  {
+    id: "OPT-721",
+    name: "Optical Encoder",
+    subsystem: "Motion Control",
+    directSupplier: "VectorSense",
+    upstreamSupplier: "Alpine Photonics",
+    country: "Switzerland",
+    riskLevel: "Low",
+    docStatus: "Verified",
+    lastVerified: "2026-09-03",
+    riskExplanation: "Origin documentation is verified and no single-source dependency is identified."
+  },
+  {
+    id: "CHL-824",
+    name: "Cooling Manifold Assembly",
+    subsystem: "Thermal Management",
+    directSupplier: "CoolPath Manufacturing",
+    upstreamSupplier: "Pacific Alloy Tubing",
+    country: "Taiwan",
+    riskLevel: "Medium",
+    docStatus: "Incomplete",
+    lastVerified: "2026-03-02",
+    riskExplanation: "The tubing source is identified, but some upstream material-origin records remain incomplete."
+  }
+];
+
+/* Test questions and their correct answers */
+const CURRENT_PROCESS_QUESTIONS = [
+  { text: "Which component has a critical upstream supplier in South Korea and verified documentation?", answer: "ESC-412" },
+  { text: "Which component has expiring documentation and a sole-sourced sensor die?", answer: "MFC-309" },
+  { text: "Which motion-control component is high risk and has missing documentation?", answer: "MOT-618" }
+];
+const CENTRALIZED_TOOL_QUESTIONS = [
+  { text: "Which vacuum-system component is high risk, linked to China, and has incomplete documentation?", answer: "VP-101" },
+  { text: "Which component has a critical upstream supplier in Taiwan and incomplete documentation?", answer: "CHL-824" },
+  { text: "Which low-risk motion-control component has verified documentation and a critical upstream supplier in Switzerland?", answer: "OPT-721" }
+];
+
+const RISK_LEVELS = ["High", "Medium", "Low"];
+const DOC_STATUSES = ["Verified", "Expiring", "Incomplete", "Missing"];
+const DOC_ATTENTION_STATUSES = ["Incomplete", "Missing", "Expiring"];
+const TONES = {
+  High: "crit", Medium: "warn", Low: "ok",
+  Verified: "ok", Expiring: "warn", Incomplete: "caution", Missing: "crit",
+  Correct: "ok", Incorrect: "crit"
+};
+
+/* =====================================================================
+   APP CONFIGURATION AND STATE (kept in memory for this browser session)
+   ===================================================================== */
+const TESTS = {
+  current: {
+    name: "Current Process",
+    questions: CURRENT_PROCESS_QUESTIONS,
+    prefix: "cp-q",
+    fieldsId: "current-fields",
+    formId: "form-current",
+    submitId: "submit-current",
+    errorId: "current-error",
+    timerId: "timer-current",
+    timerLabelId: "timer-current-label"
+  },
+  central: {
+    name: "Centralized Tool",
+    questions: CENTRALIZED_TOOL_QUESTIONS,
+    prefix: "ct-q",
+    fieldsId: "central-fields",
+    formId: "form-central",
+    submitId: "submit-central",
+    errorId: "central-error",
+    timerId: "timer-central",
+    timerLabelId: "timer-central-label"
+  }
+};
+const VIEWS = ["instructions", "current", "central", "results"];
+
+function freshTestState() {
+  return { started: false, submitted: false, startMs: 0, endMs: 0, intervalId: null, answers: [], correct: 0, seconds: 0 };
+}
+const state = {
+  current: freshTestState(),
+  central: freshTestState(),
+  view: "instructions",
+  selectedId: null
+};
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+function $(id) { return document.getElementById(id); }
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = text;
+  return node;
+}
+
+function badge(kind, value) {
+  return el("span", "badge badge-" + kind + " tone-" + (TONES[value] || "warn"), value);
+}
+
+function findRecord(id) {
+  return SUPPLY_CHAIN_RECORDS.find(function (r) { return r.id === id; });
+}
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+function formatRunning(ms) {
+  const totalSeconds = Math.floor(Math.max(0, ms) / 1000);
+  return pad2(Math.floor(totalSeconds / 60)) + ":" + pad2(totalSeconds % 60);
+}
+
+function formatFinal(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const rest = (Math.round((seconds - minutes * 60) * 10) / 10).toFixed(1);
+  return pad2(minutes) + ":" + rest.padStart(4, "0");
+}
+
+function describeSeconds(seconds) {
+  return seconds.toFixed(1) + " seconds (" + formatFinal(seconds) + ")";
+}
+
+/* =====================================================================
+   NAVIGATION
+   ===================================================================== */
+function showView(name, moveFocus) {
+  state.view = name;
+  VIEWS.forEach(function (v) {
+    $("view-" + v).hidden = v !== name;
+    const navButton = $("nav-" + v);
+    if (v === name) navButton.setAttribute("aria-current", "step");
+    else navButton.removeAttribute("aria-current");
+  });
+  window.scrollTo(0, 0);
+  if (moveFocus !== false) $("h-" + name).focus({ preventScroll: true });
+}
+
+function updateNav() {
+  const cur = state.current;
+  const cen = state.central;
+  const status = {
+    instructions: { enabled: true, text: "Start here" },
+    current: { enabled: cur.started, text: cur.submitted ? "Completed" : cur.started ? "In progress" : "Locked" },
+    central: { enabled: cur.submitted, text: cen.submitted ? "Completed" : cen.started ? "In progress" : cur.submitted ? "Ready to begin" : "Locked" },
+    results: { enabled: cen.submitted, text: cen.submitted ? "Ready" : "Locked" }
+  };
+  VIEWS.forEach(function (v) {
+    $("nav-" + v).disabled = !status[v].enabled;
+    $("navstate-" + v).textContent = status[v].text;
+  });
+}
+
+function updateBeginButtons() {
+  const cur = state.current;
+  const cen = state.central;
+
+  const beginCurrentBtn = $("begin-current");
+  const note = $("begin-current-note");
+  if (!cur.started) {
+    beginCurrentBtn.hidden = false;
+    beginCurrentBtn.textContent = "Begin Current Process Test";
+    note.textContent = "The timer starts as soon as you click.";
+  } else if (!cur.submitted) {
+    beginCurrentBtn.hidden = false;
+    beginCurrentBtn.textContent = "Return to Current Process Test";
+    note.textContent = "The Current Process Test is in progress and its timer is still running.";
+  } else {
+    beginCurrentBtn.hidden = true;
+    note.textContent = cen.submitted
+      ? "Both tests are complete. Open step 4, Results, to review them."
+      : "The Current Process Test is complete. Continue with step 3, the Centralized Tool Test.";
+  }
+
+  const label = cen.started ? "Return to Centralized Tool Test" : "Begin Centralized Tool Test";
+  [$("begin-central"), $("begin-central-start")].forEach(function (btn) {
+    btn.disabled = !cur.submitted;
+    btn.textContent = label;
+  });
+  $("begin-central").classList.toggle("btn-primary", cur.submitted && !cen.started);
+  $("begin-central-hint").textContent = !cur.submitted
+    ? "Unlocks after you submit the Current Process answers."
+    : cen.started ? "" : "The Centralized Tool timer starts when you click.";
+
+  $("central-start").hidden = cen.started;
+  $("central-test").hidden = !cen.started;
+}
+
+/* =====================================================================
+   TIMERS
+   ===================================================================== */
+function renderTimer(key) {
+  const t = state[key];
+  const cfg = TESTS[key];
+  const display = $(cfg.timerId);
+  const label = $(cfg.timerLabelId);
+  if (t.submitted) {
+    display.textContent = formatFinal(t.seconds);
+    label.textContent = "Final time";
+  } else if (t.started) {
+    display.textContent = formatRunning(performance.now() - t.startMs);
+    label.textContent = "Elapsed";
+  } else {
+    display.textContent = "00:00";
+    label.textContent = "Not started";
+  }
+}
+
+function startTimer(key) {
+  const t = state[key];
+  t.started = true;
+  t.startMs = performance.now();
+  renderTimer(key);
+  t.intervalId = setInterval(function () { renderTimer(key); }, 250);
+}
+
+function stopTimer(key) {
+  const t = state[key];
+  t.endMs = performance.now();
+  clearInterval(t.intervalId);
+  t.intervalId = null;
+  t.seconds = Math.round((t.endMs - t.startMs) / 100) / 10;
+}
+
+/* =====================================================================
+   QUESTION FORMS
+   ===================================================================== */
+function buildQuestionFields(key) {
+  const cfg = TESTS[key];
+  const holder = $(cfg.fieldsId);
+  cfg.questions.forEach(function (q, i) {
+    const id = cfg.prefix + (i + 1);
+    const wrap = el("div", "question");
+    const label = document.createElement("label");
+    label.htmlFor = id;
+    label.appendChild(el("span", "q-num label-caps", "Question " + (i + 1)));
+    label.appendChild(el("span", "", q.text));
+    const select = document.createElement("select");
+    select.id = id;
+    select.name = id;
+    select.appendChild(new Option("Select a Component ID", ""));
+    SUPPLY_CHAIN_RECORDS.forEach(function (r) { select.appendChild(new Option(r.id, r.id)); });
+    select.addEventListener("change", function () { select.removeAttribute("aria-invalid"); });
+    wrap.appendChild(label);
+    wrap.appendChild(select);
+    holder.appendChild(wrap);
+  });
+}
+
+function getSelects(key) {
+  const cfg = TESTS[key];
+  return cfg.questions.map(function (q, i) { return $(cfg.prefix + (i + 1)); });
+}
+
+function handleSubmit(key, event) {
+  event.preventDefault();
+  const t = state[key];
+  const cfg = TESTS[key];
+  if (!t.started || t.submitted) return;
+
+  const selects = getSelects(key);
+  const missing = [];
+  selects.forEach(function (s, i) {
+    if (!s.value) { missing.push(i + 1); s.setAttribute("aria-invalid", "true"); }
+    else s.removeAttribute("aria-invalid");
+  });
+  const err = $(cfg.errorId);
+  if (missing.length) {
+    err.textContent = "Answer every question before submitting. Still unanswered: Question " + missing.join(", Question ") + ". The timer is still running.";
+    err.hidden = false;
+    selects[missing[0] - 1].focus();
+    return;
+  }
+  err.textContent = "";
+  err.hidden = true;
+
+  stopTimer(key);
+  t.answers = selects.map(function (s) { return s.value; });
+  t.correct = t.answers.filter(function (a, i) { return a === cfg.questions[i].answer; }).length;
+  t.submitted = true;
+  selects.forEach(function (s) { s.disabled = true; });
+  $(cfg.submitId).disabled = true;
+  renderTimer(key);
+
+  if (key === "current") {
+    $("current-confirm").textContent = "Answers submitted. Your Current Process time was " + formatFinal(t.seconds) + ". Scores and correct answers appear in Results after the Centralized Tool Test.";
+    updateBeginButtons();
+    updateNav();
+    $("begin-central").focus();
+  } else {
+    renderResults();
+    updateBeginButtons();
+    updateNav();
+    showView("results");
+  }
+}
+
+function beginCurrent() {
+  const t = state.current;
+  if (t.submitted) return;
+  if (!t.started) {
+    $("reset-status").textContent = "";
+    startTimer("current");
+  }
+  updateBeginButtons();
+  updateNav();
+  showView("current");
+}
+
+function beginCentral() {
+  if (!state.current.submitted) return;
+  if (!state.central.started) startTimer("central");
+  updateBeginButtons();
+  updateNav();
+  showView("central");
+}
+
+/* =====================================================================
+   CURRENT PROCESS: FRAGMENTED SPREADSHEET TABS
+   ===================================================================== */
+function addSheetRow(tbody, rowNumber, values) {
+  const tr = document.createElement("tr");
+  tr.appendChild(el("th", "gutter", String(rowNumber))).setAttribute("scope", "row");
+  values.forEach(function (v) { tr.appendChild(el("td", "", v)); });
+  tbody.appendChild(tr);
+}
+
+function renderSheets() {
+  SUPPLY_CHAIN_RECORDS.forEach(function (r, i) {
+    addSheetRow($("tbody-a"), i + 1, [r.id, r.name, r.subsystem, r.directSupplier]);
+    addSheetRow($("tbody-b"), i + 1, [r.id, r.upstreamSupplier, r.country, r.docStatus, r.lastVerified]);
+    addSheetRow($("tbody-c"), i + 1, [r.id, r.riskLevel, r.riskExplanation]);
+  });
+}
+
+const SHEETS = ["a", "b", "c"];
+function selectSheet(letter, moveFocus) {
+  SHEETS.forEach(function (l) {
+    const on = l === letter;
+    const tab = $("tab-" + l);
+    tab.setAttribute("aria-selected", on ? "true" : "false");
+    tab.tabIndex = on ? 0 : -1;
+    $("panel-" + l).hidden = !on;
+  });
+  if (moveFocus) $("tab-" + letter).focus();
+}
+
+function handleSheetKeys(event) {
+  const currentIndex = SHEETS.findIndex(function (l) { return $("tab-" + l).getAttribute("aria-selected") === "true"; });
+  let next = null;
+  if (event.key === "ArrowRight") next = (currentIndex + 1) % SHEETS.length;
+  else if (event.key === "ArrowLeft") next = (currentIndex - 1 + SHEETS.length) % SHEETS.length;
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = SHEETS.length - 1;
+  if (next === null) return;
+  event.preventDefault();
+  selectSheet(SHEETS[next], true);
+}
+
+/* =====================================================================
+   CENTRALIZED TOOL: DASHBOARD
+   ===================================================================== */
+function renderSummaryCards() {
+  const total = SUPPLY_CHAIN_RECORDS.length;
+  const high = SUPPLY_CHAIN_RECORDS.filter(function (r) { return r.riskLevel === "High"; }).length;
+  const china = SUPPLY_CHAIN_RECORDS.filter(function (r) { return r.country === "China"; }).length;
+  const docs = SUPPLY_CHAIN_RECORDS.filter(function (r) { return DOC_ATTENTION_STATUSES.indexOf(r.docStatus) !== -1; }).length;
+  $("card-high").textContent = high;
+  $("card-china").textContent = china;
+  $("card-docs").textContent = docs;
+  ["card-high-of", "card-china-of", "card-docs-of"].forEach(function (id) { $(id).textContent = "of " + total; });
+}
+
+function fillFilterOptions() {
+  const countries = Array.from(new Set(SUPPLY_CHAIN_RECORDS.map(function (r) { return r.country; }))).sort();
+  countries.forEach(function (c) { $("filter-country").appendChild(new Option(c, c)); });
+  RISK_LEVELS.forEach(function (r) { $("filter-risk").appendChild(new Option(r, r)); });
+  DOC_STATUSES.forEach(function (d) { $("filter-doc").appendChild(new Option(d, d)); });
+}
+
+function getFilteredRecords() {
+  const query = $("search").value.trim().toLowerCase();
+  const country = $("filter-country").value;
+  const risk = $("filter-risk").value;
+  const doc = $("filter-doc").value;
+  return SUPPLY_CHAIN_RECORDS.filter(function (r) {
+    if (country && r.country !== country) return false;
+    if (risk && r.riskLevel !== risk) return false;
+    if (doc && r.docStatus !== doc) return false;
+    if (query) {
+      const haystack = [r.id, r.name, r.subsystem, r.directSupplier, r.upstreamSupplier, r.country].join(" | ").toLowerCase();
+      if (haystack.indexOf(query) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function renderCentralTable() {
+  const tbody = $("central-tbody");
+  tbody.textContent = "";
+  const rows = getFilteredRecords();
+
+  if (!rows.length) {
+    const tr = document.createElement("tr");
+    const td = el("td", "empty", "No components match the current search and filters. Click Clear Filters to show all " + SUPPLY_CHAIN_RECORDS.length + " components.");
+    td.colSpan = 8;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  rows.forEach(function (r) {
+    const tr = document.createElement("tr");
+    tr.className = "clickable";
+    tr.tabIndex = 0;
+    tr.dataset.id = r.id;
+    if (r.id === state.selectedId) {
+      tr.classList.add("is-selected");
+      tr.setAttribute("aria-current", "true");
+    }
+    const idCell = el("th", "mono", r.id);
+    idCell.setAttribute("scope", "row");
+    tr.appendChild(idCell);
+    tr.appendChild(el("td", "", r.name));
+    tr.appendChild(el("td", "", r.subsystem));
+    tr.appendChild(el("td", "", r.directSupplier));
+    tr.appendChild(el("td", "", r.upstreamSupplier));
+    tr.appendChild(el("td", "", r.country));
+    const riskCell = el("td");
+    riskCell.appendChild(badge("risk", r.riskLevel));
+    tr.appendChild(riskCell);
+    const docCell = el("td");
+    docCell.appendChild(badge("doc", r.docStatus));
+    tr.appendChild(docCell);
+    tbody.appendChild(tr);
+  });
+
+  $("result-count").textContent = "Showing " + rows.length + " of " + SUPPLY_CHAIN_RECORDS.length + " components";
+}
+
+function clearFilters() {
+  $("search").value = "";
+  $("filter-country").value = "";
+  $("filter-risk").value = "";
+  $("filter-doc").value = "";
+  renderCentralTable();
+}
+
+function handleRowActivate(event) {
+  const row = event.target.closest("tr[data-id]");
+  if (!row) return;
+  if (event.type === "keydown") {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+  }
+  openDetail(row.dataset.id);
+}
+
+/* Detail panel */
+function openDetail(id) {
+  const r = findRecord(id);
+  if (!r) return;
+  if (state.selectedId !== id) clearResponse();
+  state.selectedId = id;
+
+  $("d-id").textContent = r.id;
+  $("d-name").textContent = r.name;
+  $("chain-component").textContent = r.id + " " + r.name;
+  $("chain-direct").textContent = r.directSupplier;
+  $("chain-upstream").textContent = r.upstreamSupplier;
+  $("chain-country").textContent = r.country;
+  $("d-idname").textContent = r.id + ", " + r.name;
+  $("d-subsystem").textContent = r.subsystem;
+  $("d-direct").textContent = r.directSupplier;
+  $("d-upstream").textContent = r.upstreamSupplier;
+  $("d-country").textContent = r.country;
+  $("d-risk").textContent = "";
+  $("d-risk").appendChild(badge("risk", r.riskLevel));
+  $("d-explanation").textContent = r.riskExplanation;
+  $("d-doc").textContent = "";
+  $("d-doc").appendChild(badge("doc", r.docStatus));
+  $("d-verified").textContent = r.lastVerified;
+
+  $("detail").hidden = false;
+  renderCentralTable();
+  $("detail").scrollIntoView({ block: "start" });
+  $("detail-title").focus({ preventScroll: true });
+}
+
+function closeDetail(moveFocus) {
+  const previous = state.selectedId;
+  state.selectedId = null;
+  $("detail").hidden = true;
+  clearResponse();
+  renderCentralTable();
+  if (moveFocus) {
+    const row = previous ? document.querySelector('#central-tbody tr[data-id="' + previous + '"]') : null;
+    (row || $("search")).focus();
+  }
+}
+
+/* Customer response */
+function buildCustomerResponse(r) {
+  const reason = r.riskExplanation.replace(/\.\s*$/, "");
+  const because = reason.charAt(0).toLowerCase() + reason.slice(1);
+  return "Component " + r.id + " (" + r.name + ") is supplied directly by " + r.directSupplier + ". " +
+    "Its critical upstream supplier is " + r.upstreamSupplier + ", located in " + r.country + ". " +
+    "The current illustrative risk level is " + r.riskLevel + " because " + because + ". " +
+    "Documentation status is " + r.docStatus + ", last verified on " + r.lastVerified + ".";
+}
+
+function setCopyStatus(text, tone) {
+  const s = $("copy-status");
+  s.className = "msg" + (tone ? " msg-" + tone : "");
+  s.textContent = text;
+}
+
+function clearResponse() {
+  $("response-text").value = "";
+  $("copy-response").disabled = true;
+  setCopyStatus("", "");
+}
+
+function generateResponse() {
+  const r = findRecord(state.selectedId);
+  if (!r) return;
+  $("response-text").value = buildCustomerResponse(r);
+  $("copy-response").disabled = false;
+  setCopyStatus("Response generated for " + r.id + ". You can edit it before copying.", "ok");
+}
+
+function legacyCopy(textarea) {
+  let ok = false;
+  try {
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    ok = document.execCommand("copy");
+  } catch (e) {
+    ok = false;
+  }
+  if (ok) {
+    setCopyStatus("Response copied to the clipboard.", "ok");
+  } else {
+    textarea.focus();
+    textarea.select();
+    setCopyStatus("This browser blocked automatic copying. The response text is selected: press Ctrl+C (Windows) or Cmd+C (Mac) to copy it.", "warn");
+  }
+}
+
+function copyResponse() {
+  const textarea = $("response-text");
+  if (!textarea.value.trim()) {
+    setCopyStatus("Generate a response before copying.", "warn");
+    return;
+  }
+  let promise = null;
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      promise = navigator.clipboard.writeText(textarea.value);
+    }
+  } catch (e) {
+    promise = null;
+  }
+  if (promise && typeof promise.then === "function") {
+    promise.then(
+      function () { setCopyStatus("Response copied to the clipboard.", "ok"); },
+      function () { legacyCopy(textarea); }
+    );
+  } else {
+    legacyCopy(textarea);
+  }
+}
+
+/* =====================================================================
+   RESULTS
+   ===================================================================== */
+function renderResults() {
+  const cur = state.current;
+  const cen = state.central;
+  if (!cur.submitted || !cen.submitted) return;
+  const curTotal = CURRENT_PROCESS_QUESTIONS.length;
+  const cenTotal = CENTRALIZED_TOOL_QUESTIONS.length;
+
+  $("r-cur-time").textContent = describeSeconds(cur.seconds);
+  $("r-cur-score").textContent = cur.correct + " of " + curTotal;
+  $("r-cen-time").textContent = describeSeconds(cen.seconds);
+  $("r-cen-score").textContent = cen.correct + " of " + cenTotal;
+
+  const diff = Math.round((cur.seconds - cen.seconds) * 10) / 10;
+  const absDiff = Math.abs(diff).toFixed(1);
+  if (diff > 0) $("r-diff").textContent = absDiff + " seconds less with the Centralized Tool";
+  else if (diff < 0) $("r-diff").textContent = absDiff + " seconds more with the Centralized Tool";
+  else $("r-diff").textContent = "0.0 seconds (no difference)";
+
+  if (cur.seconds === 0) {
+    $("r-pct").textContent = "Not calculable (the Current Process time was 0 seconds)";
+  } else {
+    let pct = Math.round(((cur.seconds - cen.seconds) / cur.seconds) * 1000) / 10;
+    if (pct === 0) pct = 0; /* normalizes -0 */
+    const absPct = Math.abs(pct).toFixed(1);
+    if (pct > 0) $("r-pct").textContent = pct.toFixed(1) + "% (the Centralized Tool took " + absPct + "% less time)";
+    else if (pct < 0) $("r-pct").textContent = pct.toFixed(1) + "% (the Centralized Tool took " + absPct + "% more time)";
+    else if (diff !== 0) $("r-pct").textContent = "0.0% (a change of less than 0.1%)";
+    else $("r-pct").textContent = "0.0% (no change)";
+  }
+
+  if (diff > 0) $("speed-statement").textContent = "The centralized tool was faster in this test.";
+  else if (diff === 0) $("speed-statement").textContent = "Both methods took the same amount of time in this test.";
+  else $("speed-statement").textContent = "The centralized tool was slower in this test.";
+
+  let accuracy;
+  if (cen.correct > cur.correct) {
+    accuracy = "The centralized tool produced more correct answers in this test: " + cen.correct + " of " + cenTotal + ", compared with " + cur.correct + " of " + curTotal + " for the current process.";
+  } else if (cen.correct === cur.correct) {
+    accuracy = "Both methods produced the same number of correct answers in this test: " + cur.correct + " of " + curTotal + " each.";
+  } else {
+    accuracy = "The current process produced more correct answers in this test: " + cur.correct + " of " + curTotal + ", compared with " + cen.correct + " of " + cenTotal + " for the centralized tool.";
+  }
+  $("accuracy-statement").textContent = accuracy;
+  $("accuracy-caution").textContent = "Each method had only three questions, and the questions differed between the two tests, so a one-answer difference may reflect question difficulty or chance rather than the method. The centralized tool test also came second, after the tester had already seen the data.";
+
+  const tbody = $("review-tbody");
+  tbody.textContent = "";
+  [["current", CURRENT_PROCESS_QUESTIONS, cur], ["central", CENTRALIZED_TOOL_QUESTIONS, cen]].forEach(function (group) {
+    const testName = TESTS[group[0]].name;
+    group[1].forEach(function (q, i) {
+      const given = group[2].answers[i];
+      const isCorrect = given === q.answer;
+      const givenRecord = findRecord(given);
+      const correctRecord = findRecord(q.answer);
+      const tr = document.createElement("tr");
+      tr.appendChild(el("td", "", testName + " Q" + (i + 1)));
+      tr.appendChild(el("td", "", q.text));
+      tr.appendChild(el("td", "", givenRecord ? givenRecord.id + " (" + givenRecord.name + ")" : "No answer"));
+      tr.appendChild(el("td", "", correctRecord.id + " (" + correctRecord.name + ")"));
+      const resultCell = el("td");
+      resultCell.appendChild(badge("doc", isCorrect ? "Correct" : "Incorrect"));
+      tr.appendChild(resultCell);
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function clearResults() {
+  ["r-cur-time", "r-cur-score", "r-cen-time", "r-cen-score", "r-diff", "r-pct",
+   "speed-statement", "accuracy-statement", "accuracy-caution"].forEach(function (id) { $(id).textContent = ""; });
+  $("review-tbody").textContent = "";
+}
+
+/* =====================================================================
+   RESET
+   ===================================================================== */
+function resetExperiment() {
+  ["current", "central"].forEach(function (key) {
+    clearInterval(state[key].intervalId);
+    state[key] = freshTestState();
+    getSelects(key).forEach(function (s) {
+      s.value = "";
+      s.disabled = false;
+      s.removeAttribute("aria-invalid");
+    });
+    $(TESTS[key].submitId).disabled = false;
+    const err = $(TESTS[key].errorId);
+    err.textContent = "";
+    err.hidden = true;
+    renderTimer(key);
+  });
+  $("current-confirm").textContent = "";
+  selectSheet("a", false);
+  clearFilters();
+  closeDetail(false);
+  clearResults();
+  updateBeginButtons();
+  updateNav();
+  $("reset-status").textContent = "The experiment was reset. All timers, answers, scores, filters, and responses were cleared.";
+  showView("instructions");
+}
+
+/* =====================================================================
+   START-UP AND EVENT WIRING
+   ===================================================================== */
+function init() {
+  renderSheets();
+  buildQuestionFields("current");
+  buildQuestionFields("central");
+  fillFilterOptions();
+  renderSummaryCards();
+  renderCentralTable();
+  renderTimer("current");
+  renderTimer("central");
+  updateBeginButtons();
+  updateNav();
+  showView("instructions", false);
+
+  document.querySelectorAll(".step").forEach(function (btn) {
+    btn.addEventListener("click", function () { if (!btn.disabled) showView(btn.dataset.view); });
+  });
+  $("begin-current").addEventListener("click", beginCurrent);
+  $("begin-central").addEventListener("click", beginCentral);
+  $("begin-central-start").addEventListener("click", beginCentral);
+  $("form-current").addEventListener("submit", function (e) { handleSubmit("current", e); });
+  $("form-central").addEventListener("submit", function (e) { handleSubmit("central", e); });
+
+  SHEETS.forEach(function (l) {
+    $("tab-" + l).addEventListener("click", function () { selectSheet(l, false); });
+  });
+  document.querySelector(".sheet-tabs").addEventListener("keydown", handleSheetKeys);
+
+  $("search").addEventListener("input", renderCentralTable);
+  $("search").addEventListener("search", renderCentralTable);
+  ["filter-country", "filter-risk", "filter-doc"].forEach(function (id) {
+    $(id).addEventListener("change", renderCentralTable);
+  });
+  $("clear-filters").addEventListener("click", clearFilters);
+  $("central-tbody").addEventListener("click", handleRowActivate);
+  $("central-tbody").addEventListener("keydown", handleRowActivate);
+  $("detail-close").addEventListener("click", function () { closeDetail(true); });
+  $("generate-response").addEventListener("click", generateResponse);
+  $("copy-response").addEventListener("click", copyResponse);
+  $("response-text").addEventListener("input", function () {
+    $("copy-response").disabled = !$("response-text").value.trim();
+  });
+  $("reset-experiment").addEventListener("click", resetExperiment);
+}
+
+init();
+</script>
+</body>
+</html>
