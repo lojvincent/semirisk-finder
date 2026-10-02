@@ -575,7 +575,7 @@ textarea { min-height: 128px; resize: vertical; line-height: 1.55; }
             <div class="scroll-x">
               <table class="sheet">
                 <caption class="sr-only">Risk Notes</caption>
-                <thead><tr><th scope="col" class="gutter"><span class="sr-only">Row</span></th><th scope="col">Component ID</th><th scope="col">Risk Level</th><th scope="col">Risk Explanation</th></tr></thead>
+                <thead><tr><th scope="col" class="gutter"><span class="sr-only">Row</span></th><th scope="col">Component ID</th><th scope="col">Risk Explanation</th></tr></thead>
                 <tbody id="tbody-c"></tbody>
               </table>
             </div>
@@ -1175,7 +1175,7 @@ function renderSheets() {
   SUPPLY_CHAIN_RECORDS.forEach(function (r, i) {
     addSheetRow($("tbody-a"), i + 1, [r.id, r.name, r.subsystem, r.directSupplier]);
     addSheetRow($("tbody-b"), i + 1, [r.id, r.upstreamSupplier, r.country, r.docStatus, r.lastVerified]);
-    addSheetRow($("tbody-c"), i + 1, [r.id, r.riskLevel, r.riskExplanation]);
+    addSheetRow($("tbody-c"), i + 1, [r.id, r.riskExplanation]);
   });
 }
 
